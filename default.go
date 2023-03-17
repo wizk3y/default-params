@@ -24,7 +24,7 @@ func SetNilSign(sign string) {
 }
 
 // MustFillDefaultValue --
-func MustFillDefaultValue(i interface{}, opt ...bool) {
+func MustFillDefaultValue(i interface{}, opt ...internal.FillOpt) {
 	err := FillDefaultValue(i, opt...)
 	if err != nil {
 		panic(err)
@@ -32,10 +32,10 @@ func MustFillDefaultValue(i interface{}, opt ...bool) {
 }
 
 // FillDefaultValue --
-func FillDefaultValue(i interface{}, opt ...bool) error {
-	skipNonZero := true
-	if len(opt) > 0 {
-		skipNonZero = opt[0]
+func FillDefaultValue(i interface{}, opt ...internal.FillOpt) error {
+	conf := internal.FillConfig{}
+	for _, o := range opt {
+		o.Apply(&conf)
 	}
 
 	v := reflect.ValueOf(i)
@@ -53,22 +53,17 @@ func FillDefaultValue(i interface{}, opt ...bool) error {
 	for index := 0; index < t.NumField(); index++ {
 		f := t.Field(index)
 
-		if !ve.FieldByName(f.Name).IsZero() && skipNonZero {
+		if !ve.FieldByName(f.Name).IsZero() && !conf.OverrideSettedValue {
 			continue
 		}
 
-		setValueByType(ve, f.Name, f.Type, f.Tag.Get(extractTag))
+		setValueByType(ve, f.Name, f.Type, f.Tag.Get(extractTag), false)
 	}
 
 	return nil
 }
 
-func setValueByType(ve reflect.Value, name string, vType reflect.Type, valueStr string, opt ...bool) {
-	ptr := false
-	if len(opt) > 0 {
-		ptr = opt[0]
-	}
-
+func setValueByType(ve reflect.Value, name string, vType reflect.Type, valueStr string, ptr bool) {
 	switch vType.Kind() {
 	case reflect.String, reflect.Bool, reflect.Float64, reflect.Float32, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		value := internal.CastValueTo(valueStr, vType, ptr)
@@ -100,7 +95,7 @@ func setValueByType(ve reflect.Value, name string, vType reflect.Type, valueStr 
 
 			switch vType.Elem().Kind() {
 			case reflect.String, reflect.Bool, reflect.Float64, reflect.Float32, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-				value = internal.CastValueTo(vStr, vType.Elem())
+				value = internal.CastValueTo(vStr, vType.Elem(), false)
 			case reflect.Ptr:
 				value = internal.CastValueTo(vStr, internal.Deref(vType.Elem()), true)
 			}

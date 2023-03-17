@@ -72,9 +72,8 @@ func Test_MustFillDefaultValue(t *testing.T) {
 		StrDur:    time.Duration(10) * time.Millisecond,
 		IntDurPtr: *internal.DurationPtr(time.Duration(1) * time.Second),
 	})
-	if equal {
-		t.Error("output not equal")
-		return
+	if !equal {
+		t.Fatal("output not equal")
 	}
 
 	// p, err := json.Marshal(&params)

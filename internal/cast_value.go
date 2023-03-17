@@ -3,15 +3,16 @@ package internal
 import (
 	"reflect"
 	"strconv"
-	"strings"
-	"time"
 )
 
 // CastValueTo -- convert value from string to specific reflect.Type
-func CastValueTo(strValue string, vType reflect.Type, opt ...bool) interface{} {
-	ptr := false
-	if len(opt) > 0 {
-		ptr = opt[0]
+func CastValueTo(strValue string, vType reflect.Type, ptr bool) interface{} {
+	if assert := getAssert(vType); assert != nil {
+		if ptr {
+			return assert.ToPtrType(strValue)
+		}
+
+		return assert.ToType(strValue)
 	}
 
 	switch vType.Kind() {
@@ -81,20 +82,6 @@ func CastValueTo(strValue string, vType reflect.Type, opt ...bool) interface{} {
 
 		return defaultValue
 	case reflect.Int64:
-		if vType.String() == "time.Duration" {
-			if !containsDurationSuffix(strValue) {
-				strValue += "ns"
-			}
-
-			defaultValue, _ := time.ParseDuration(strValue)
-
-			if ptr {
-				return DurationPtr(defaultValue)
-			}
-
-			return defaultValue
-		}
-
 		defaultValue, _ := strconv.ParseInt(strValue, 10, 64)
 
 		if ptr {
@@ -105,16 +92,4 @@ func CastValueTo(strValue string, vType reflect.Type, opt ...bool) interface{} {
 	default:
 		return nil
 	}
-}
-
-func containsDurationSuffix(s string) bool {
-	validSuffixes := []string{"h", "m", "s", "ms", "µs", "us", "ns"}
-
-	for _, vs := range validSuffixes {
-		if strings.HasSuffix(s, vs) {
-			return true
-		}
-	}
-
-	return false
 }
