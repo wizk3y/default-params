@@ -23,10 +23,7 @@ func CastValueTo(strValue string, vType reflect.Type, ptr bool) interface{} {
 
 		return strValue
 	case reflect.Bool:
-		defaultValue := false
-		if strValue == "true" || strValue == "1" {
-			defaultValue = true
-		}
+		defaultValue, _ := strconv.ParseBool(strValue)
 
 		if ptr {
 			return BoolPtr(defaultValue)

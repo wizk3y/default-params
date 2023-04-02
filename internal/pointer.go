@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"reflect"
 	"time"
 )
 
@@ -30,8 +29,8 @@ func Int16Ptr(i int16) *int16 {
 	return &i
 }
 
-// Int3Ptr --
-func Int3Ptr(i int32) *int32 {
+// Int32Ptr --
+func Int32Ptr(i int32) *int32 {
 	return &i
 }
 
@@ -53,13 +52,4 @@ func Float64Ptr(f float64) *float64 {
 // DurationPtr --
 func DurationPtr(d time.Duration) *time.Duration {
 	return &d
-}
-
-// Deref --
-func Deref(t reflect.Type) reflect.Type {
-	if t.Kind() == reflect.Ptr {
-		t = t.Elem()
-	}
-
-	return t
 }

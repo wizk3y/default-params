@@ -69,16 +69,6 @@ func setValueByType(ve reflect.Value, name string, vType reflect.Type, valueStr 
 		value := internal.CastValueTo(valueStr, vType, ptr)
 
 		ve.FieldByName(name).Set(reflect.ValueOf(value))
-	case reflect.Struct:
-		defaultValue := reflect.New(vType)
-
-		FillDefaultValue(defaultValue.Interface())
-
-		if ptr {
-			ve.FieldByName(name).Set(defaultValue)
-		} else {
-			ve.FieldByName(name).Set(defaultValue.Elem())
-		}
 	case reflect.Ptr:
 		if valueStr == nilSign {
 			return
@@ -104,5 +94,15 @@ func setValueByType(ve reflect.Value, name string, vType reflect.Type, valueStr 
 		}
 
 		ve.FieldByName(name).Set(dataValue)
+	case reflect.Struct:
+		defaultValue := reflect.New(vType)
+
+		FillDefaultValue(defaultValue.Interface())
+
+		if ptr {
+			ve.FieldByName(name).Set(defaultValue)
+		} else {
+			ve.FieldByName(name).Set(defaultValue.Elem())
+		}
 	}
 }
